@@ -94,11 +94,11 @@ app.post('/register', async function (req, res) {
     const refreshToken = jwt.sign(payload, process.env.NEXT_PUBLIC_JWT_REFRESH_SECRET);
 
     //Set the cookie
-    res.cookie('supachatAccessToken', accessToken, { httpOnly: true, secure: false });
-    res.cookie('supachatRefreshToken', refreshToken, { httpOnly: true, secure: false });
+    // res.cookie('supachatAccessToken', accessToken, { httpOnly: true, secure: false });
+    // res.cookie('supachatRefreshToken', refreshToken, { httpOnly: true, secure: false });
     
     // Respond with success
-    res.send({ success: true, message: "User registered successfully."});
+    res.json({ success: true, cookies: { accessToken, refreshToken}, message: "User registered successfully."});
 
   } catch (err) {
     console.error('Error: ', err);
@@ -106,10 +106,10 @@ app.post('/register', async function (req, res) {
   }
 });
 
-app.post('/login', async (req, res) => {
+app.post('/login', async function (req, res) {
   try {
-      const { username, password } = req.body;
-
+      const { username, password } = await req.body;
+      
       // Retrieve user from the database
       const { rows } = await req.db.query(`
       SELECT id, user_name, password, admin_flag 
@@ -119,12 +119,9 @@ app.post('/login', async (req, res) => {
       const user = rows[0]
 
       // Verify user exists and password is correct
-      const passwordsMatch = await bcrypt.compare(password, user.password)
-      if (rows.length === 0 || !passwordsMatch) {
+      if (rows.length === 0 || !(await bcrypt.compare(password, user.password))) {
         return res.status(401).json({ success: false, message: 'Username or password is incorrect.' });
       }
-
-      // const user = rows[0]
 
       const payload = {
         userId: user.id,
@@ -135,12 +132,15 @@ app.post('/login', async (req, res) => {
       // Generate JWT token
       const accessToken = jwt.sign(payload, process.env.NEXT_PUBLIC_JWT_SECRET);
       const refreshToken = jwt.sign(payload, process.env.NEXT_PUBLIC_JWT_REFRESH_SECRET);
+
       // Set JWT token in cookie
-      res.cookie('supachatAccessToken', accessToken, { httpOnly: true, secure: false });
-      res.cookie('supachatRefreshToken', refreshToken, { httpOnly: true, secure: false });
+      // res.cookie('supachatAccessToken', accessToken, { httpOnly: false, secure: false });
+      // res.cookie('supachatRefreshToken', refreshToken, { httpOnly: false, secure: false });
+      // console.log('Access: ', accessToken)
+      // console.log('Refresh: ', refreshToken)
 
       // Respond with success
-      res.json({ success: true, message: 'Login successful' });
+      res.json({ success: true, cookies: { accessToken, refreshToken }, message: 'Login successful' });
   } catch (error) {
       console.error('Error:', error);
       res.status(500).json({ success: false, error: 'An error occurred during login' });
@@ -150,10 +150,10 @@ app.post('/login', async (req, res) => {
 app.post('/logout', async (req, res) => {
   try {
     // Clear the access token cookie
-    res.clearCookie('supachatAccessToken');
+    // res.clearCookie('supachatAccessToken');
 
     // Clear the refresh token cookie
-    res.clearCookie('supachatRefreshToken');
+    // res.clearCookie('supachatRefreshToken');
 
     // Respond with success
     res.json({ success: true, message: 'Successfully logged out.' });
@@ -164,17 +164,22 @@ app.post('/logout', async (req, res) => {
   }
 });
 
-app.post('/user', async function (req, res) {
+app.get('/user', async function (req, res) {
   try {
-    const accessToken = req.cookies.supachatAccessToken
+    const accessToken = req.headers.supachataccesstoken
+   
     if(!accessToken) return res.status(500).json({ success: false, data: { user: null }, error: "No access token found." });
 
     const decoded = jwt.verify(accessToken, process.env.NEXT_PUBLIC_JWT_SECRET);
     if(!decoded){
       return res.status(500).json({ success: false, data: { user: null }, error: "Invalid access token." });
     }
-
-    return res.json({ success: true, data: { user: decoded}, error: 'No error'})
+    
+    //if access token is expired 
+    //go to /refresh-token endpoint and create a new
+    //access token. If and only if refresh token is valid and not expired either
+    
+    return res.json({ success: true, data: { user: decoded }, error: 'No error'})
 
   } catch (err) {
     console.error(err)
@@ -184,7 +189,7 @@ app.post('/user', async function (req, res) {
 
 app.post('/refresh-token', async (req, res) => {
   try {
-      const refreshToken = req.cookies.supachatRefreshToken;
+      const refreshToken = req.headers.supachatrefreshtoken;
 
       // Check if the refresh token exists
       if (!refreshToken) {

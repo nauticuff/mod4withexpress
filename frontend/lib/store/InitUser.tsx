@@ -3,10 +3,10 @@
 import { useEffect, useRef } from 'react';
 
 interface User {
-  iat: number
+  iat: number;
   userId: string;
   userIsAdmin: number;
-  username: string
+  username: string;
 }
 
 import { useUser } from './user';

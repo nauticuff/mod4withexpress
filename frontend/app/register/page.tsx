@@ -1,26 +1,31 @@
 "use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
-import { register } from '@/lib/store/ApiServices/UserService';
-import { useRouter } from 'next/navigation';
-import { useUser } from '@/lib/store/user';
+import { register } from "@/lib/ApiServices/UserService";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/lib/store/user";
 
 export default function Page() {
-  const router = useRouter()
+  const router = useRouter();
   const user = useUser((state) => state.user);
-    
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
   const handleRegister = async () => {
-    console.log("Username: ", username);
-    console.log("Password: ", password);
-    console.log("admin: ", isAdmin);
+    // console.log("Username: ", username);
+    // console.log("Password: ", password);
+    // console.log("admin: ", isAdmin);
 
-    await register({ username, password, userIsAdmin: isAdmin });
+    const res = await register({ username, password, userIsAdmin: isAdmin });
+    console.log(res)
+    if (res.success) {
+
+      router.push("/");
+    }
   };
 
   useEffect(() => {

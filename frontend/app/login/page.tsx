@@ -1,6 +1,6 @@
 "use client";
 
-import { login } from "@/lib/store/ApiServices/UserService";
+import { login } from "@/lib/ApiServices/UserService";
 import { useUser } from "@/lib/store/user";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 export default function Page() {
   const router = useRouter();
   const user = useUser((state) => state.user);
-  // console.log(user)
+  console.log('User info: ', user)
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +21,7 @@ export default function Page() {
     if(res.success){
       router.push('/')
     }
-    // console.log('Res: ', res)
+    console.log('Login res: ', res)
   };
 
   useEffect(() => {

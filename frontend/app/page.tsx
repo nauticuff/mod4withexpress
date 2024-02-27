@@ -1,25 +1,35 @@
-"use client";
-
-import { useEffect, useState } from "react";
-
 import Header from "@/components/Header";
-import { getUser } from "@/lib/store/ApiServices/UserService";
+import { getUser } from "@/lib/ApiServices/UserService";
 import InitUser from "@/lib/store/InitUser";
 import { User } from "@/lib/store/user";
+// import { User } from "@/lib/store/user";
 
-export default function Home() {
-  const [data, setData] = useState<{ user: User } | { user: null }>({
-    user: null,
-  });
+// const getUser = async () => {
+//   const cookieStore = cookies();
+//   const supachatAccessToken = cookieStore.get("supachatAccessToken")?.value;
+//   const supachatRefreshToken = cookieStore.get("supachatRefreshToken")?.value;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: userData } = await getUser();
-      setData(userData);
-    };
+//   const response = await fetch("http://localhost:5432/user", {
+//     method: "GET",
+//     headers: {
+//       "Content-Type": "application/json",
+//       supachatAccessToken: `${supachatAccessToken}`,
+//       supachatRefreshToken: `${supachatRefreshToken}`,
+//     },
+//   });
 
-    fetchData();
-  }, []);
+//   const data = await response.json();
+
+//   return data;
+// };
+
+interface UserData {
+  data: { user: User } | { user: null };
+}
+
+export default async function Home() {
+  const { data }: UserData = await getUser();
+  console.log(data.user);
 
   return (
     <div className="h-screen w-full">

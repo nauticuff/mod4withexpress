@@ -1,7 +1,7 @@
 'use client'
 
 import { User } from "@/lib/store/user";
-import { logout } from "@/lib/store/ApiServices/UserService";
+import { logout } from "@/lib/ApiServices/UserService";
 import { useRouter } from "next/navigation";
 
 export default function Header({ user }: { user: User | null }) {
